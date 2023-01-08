@@ -1,10 +1,10 @@
 all:
   hosts:
-    control_plane:
+    control-plane:
       ansible_host: 192.168.56.10
-    worker_node_01:
+    worker-node-01:
       ansible_host: 192.168.56.11
-    worker_node_02:
+    worker-node-02:
       ansible_host: 192.168.56.12
   vars:
     # Ansible settings
@@ -20,8 +20,8 @@ all:
   children:
     directors:
       hosts:
-        control_plane:
+        control-plane:
     workers:
       hosts:
-        worker_node_01:
-        worker_node_02:
+        worker-node-01:
+        worker-node-02:

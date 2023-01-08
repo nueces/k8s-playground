@@ -1,0 +1,27 @@
+---
+# Common configuration for all the nodes in the cluster.
+
+- name: hostname configuration
+  block:
+    - name: set hostname
+      ansible.builtin.hostname:
+        name: "{{ inventory_hostname }}"
+      tags:
+        - bootstrap
+
+    - name: Update hostname in /etc/hosts
+      ansible.builtin.lineinfile:
+        path: /etc/hosts
+        regexp: '^127\.0\.0\.2\s.*'
+        line: '127.0.0.2	{{ inventory_hostname }}'
+      tags:
+        - bootstrap
+
+    - name: Add cluster mappings to /etc/hosts
+      ansible.builtin.lineinfile:
+        path: /etc/hosts
+        regexp: "^{{ hostvars[item]['ansible_host'] }}"
+        line: "{{ hostvars[item]['ansible_host'] }}	{{ hostvars[item]['inventory_hostname'] }}"
+      loop: "{{ groups['all'] }}"
+      tags:
+        - bootstrap

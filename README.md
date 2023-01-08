@@ -46,12 +46,16 @@ The private IP range 192.168.15.0/24 was selected due to virtualbox limitations 
 ### Ansible
 * Use ansible Vault.
 
-
 # Instructions
 
 Bootstrap virtualenv
 ```shell
 pyenv virtualenv k8s-playground
+```
+
+Activate virtualenv
+```shell
+pyenv activate k8s-playground
 ```
 
 Install Ansible and python dependencies
@@ -63,7 +67,6 @@ Deploy Vagrant machines
 ```shell
 Vagrant up
 ```
-
 
 # Notes:
 [^1]: On Linux, macOS and Solaris Oracle VM VirtualBox will only allow IP addresses in 192.168.56.0/21 range to be assigned to host-only adapters https://www.virtualbox.org/manual/ch06.html#network_hostonly
