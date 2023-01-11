@@ -25,3 +25,105 @@
       loop: "{{ groups['all'] }}"
       tags:
         - bootstrap
+
+# Apt sources
+- name: Configure apt sources
+  block:
+    - name: apt sources | remove default sources.list
+      ansible.builtin.file:
+        path: /etc/apt/sources.list
+        state: absent
+      tags:
+        - bootstrap
+
+    - name: apt sources | enable main, contrib and non-free components
+      ansible.builtin.apt_repository:
+        repo: deb https://deb.debian.org/debian {{ item }} main contrib non-free
+        state: present
+        filename: main
+      loop:
+        - "{{ ansible_distribution_release }}"
+        - "{{ ansible_distribution_release }}-updates"
+        - "{{ ansible_distribution_release }}-backports"
+      tags:
+        - bootstrap
+
+    - name: apt sources | enable main, contrib and non-free components for debian-security
+      ansible.builtin.apt_repository:
+        repo: deb https://deb.debian.org/debian-security/ {{ ansible_distribution_release }}-security main contrib non-free
+        state: present
+        filename: main
+      tags:
+        - bootstrap
+
+
+# containerd
+- name: Configure and Install containerd from upstream (docker.com)
+  block:
+    - name: Containerd | Install bootstrap dependencies
+      ansible.builtin.apt:
+        name: "{{ item }}"
+        state: present
+      loop:
+        - gpg
+        - curl
+      tags:
+        - bootstrap
+        - dependencies
+        - containerd
+
+    - name: Containerd | Register dpkg architecture
+      ansible.builtin.command: dpkg --print-architecture
+      register: dpkg_architecture
+      tags:
+        - bootstrap
+        - containerd
+
+    - name: Containerd | Download and install gpg key
+      ansible.builtin.shell:
+        cmd: |
+          curl -fsSL https://download.docker.com/linux/debian/gpg |\
+          gpg --dearmor --output /etc/apt/trusted.gpg.d/docker.gpg
+        creates: /etc/apt/trusted.gpg.d/docker.gpg
+      tags:
+        - bootstrap
+        - containerd
+
+    - name: Containerd | Add docker apt repository
+      ansible.builtin.apt_repository:
+        repo: deb [arch={{ dpkg_architecture.stdout }}] https://download.docker.com/linux/debian {{ ansible_distribution_release }} stable
+        state: present
+        filename: docker
+      tags:
+        - bootstrap
+        - containerd
+
+    - name: Containerd | Install containerd.io package
+      ansible.builtin.apt:
+        name: "{{ item }}"
+        state: present
+        default_release: "{{ ansible_distribution_release }}"
+      loop:
+        - containerd.io
+      tags:
+        - bootstrap
+        - containerd
+
+  when:
+    - install_containerd_from_upstream is true
+
+
+- name: Containerd | Install containerd package
+  ansible.builtin.apt:
+    name: "{{ item }}"
+    state: present
+  loop:
+    - containerd
+  tags:
+    - bootstrap
+    - containerd
+  when:
+    - install_containerd_from_upstream is false
+
+# Note:
+# 1. I'm intentionally not uninstalling any package manually in order to avoid conflicts, as I prefer to relay on Debian for do that.
