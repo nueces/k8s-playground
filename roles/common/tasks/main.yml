@@ -127,3 +127,64 @@
 
 # Note:
 # 1. I'm intentionally not uninstalling any package manually in order to avoid conflicts, as I prefer to relay on Debian for do that.
+
+
+- name: Enable IPv4 forwarding and let iptables see bridged traffic
+  block:
+  - name: Register a list of kernel modules to be loaded
+    ansible.builtin.set_fact:
+      kernel_modules:
+        - overlay
+        - br_netfilter
+    tags:
+      - bootstrap
+      - kernel
+      - k8s
+
+  - name: Configure kernel modules to be loaded
+    ansible.builtin.lineinfile:
+      path: /etc/modules-load.d/k8s.conf
+      create: true
+      line: "{{ item }}"
+    loop: "{{ kernel_modules }}"
+    tags:
+      - bootstrap
+      - kernel
+      - k8s
+
+  - name: Load kernel modules
+    ansible.builtin.command: "modprobe {{ item }}"
+    loop: "{{ kernel_modules }}"
+    tags:
+      - bootstrap
+      - kernel
+      - k8s
+
+  - name: Register a list of sysctl params required by setup
+    ansible.builtin.set_fact:
+      sysctl_parameters:
+        net.bridge.bridge-nf-call-iptables: 1
+        net.bridge.bridge-nf-call-ip6tables: 1
+        net.ipv4.ip_forward: 1
+    tags:
+      - bootstrap
+      - k8s
+      - sysctl
+
+  - name: Save sysctl params
+    ansible.builtin.lineinfile:
+      path: /etc/sysctl.d/k8s.conf
+      create: true
+      line: "{{ item.key }} = {{ item.value }}"
+    loop: "{{ sysctl_parameters | dict2items }}"
+    tags:
+      - bootstrap
+      - k8s
+      - sysctl
+
+  - name: Load sysctl params
+    ansible.builtin.command: sysctl --system
+    tags:
+      - bootstrap
+      - k8s
+      - sysctl
