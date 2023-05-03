@@ -14,14 +14,13 @@ Vagrant, Ansible, Pyenv+Virtualenv and other tools.
 
 # Overview
 
-The main idea behind this project is to create a playground to learn
-Kubernetes.
+The main idea behind this project is to create a playground to learn Kubernetes.
 
 # Prerequisites
 * Install pyenv
 * Install vagrant
 * Install virtualbox
-* Create a ssh key to use with the virtual machines.
+* Create an ssh key to use with the virtual machines.
 
 # Goals
 * Use the Ansible inventory as single source of truth to define all the infrastructure.
@@ -46,6 +45,9 @@ The private IP range 192.168.15.0/24 was selected due to virtualbox limitations 
 ### Ansible
 * Use ansible Vault.
 
+### CICD
+* test support of multiples vagrant box distributions, like ubuntu/focal64, etc.
+
 # Instructions
 
 Bootstrap virtualenv
@@ -68,5 +70,11 @@ Deploy Vagrant machines
 Vagrant up
 ```
 
+Cluster provisioning
+```shell
+ansible-playbook playbook.yml
+```
+
 # Notes:
 [^1]: On Linux, macOS and Solaris Oracle VM VirtualBox will only allow IP addresses in 192.168.56.0/21 range to be assigned to host-only adapters https://www.virtualbox.org/manual/ch06.html#network_hostonly
+[^2]: In releases older than Debian 12 and Ubuntu 22.04, `/etc/apt/keyrings` does not exist by default. https://wiki.debian.org/DebianRepository/UseThirdParty
