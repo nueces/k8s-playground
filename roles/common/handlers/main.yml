@@ -1,0 +1,8 @@
+- name: Load kernel modules
+  ansible.builtin.systemd:
+    state: restarted
+    name: systemd-modules-load
+  tags:
+    - bootstrap
+    - kernel
+    - systemd
