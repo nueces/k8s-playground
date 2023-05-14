@@ -7,3 +7,7 @@ sysctl_parameters:
   net.bridge.bridge-nf-call-iptables: 1
   net.bridge.bridge-nf-call-ip6tables: 1
   net.ipv4.ip_forward: 1
+# I don't like to relay in map list, but in this case it's better than register a variable from the command output as it
+# change in every run.
+dpkg_architecture:
+  x86_64: amd64
