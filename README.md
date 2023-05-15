@@ -50,6 +50,45 @@ The private IP range 192.168.15.0/24 was selected due to virtualbox limitations 
 
 # Instructions
 
+## Using make
+
+```shell
+Usage: make <target>  [one or more targets separated by spaces and in the order that their would executed]
+
+ The following targets are available: 
+
+	help
+			Show this help.
+	all
+			Run init, up, and play targets.
+	init
+			Run pip-install, and galaxy-up targets.
+	pip-install
+			Install python dependecies using pip.
+	pip-upgrade
+			Upgrade python dependecies using pip.
+			Ignore pinning versions in the requirements.txt file.
+	pip-uninstall
+			Uninstall python dependencies using pip.
+	up
+			Deploy Vagrant boxes.
+	galaxy-up
+			Install ansible modules using ansible-galaxy.
+	play
+			Run ansible-playbook.
+	debug
+			Run ansible-playbook, ejecute only task tagged as 'debug'.
+	destroy
+			Destroy Vagrant boxes.
+	build
+			Run up, and play targets.
+	rebuild
+			Run destroy, up, and play targets.
+
+```
+
+## Manual steps
+
 Bootstrap virtualenv
 ```shell
 pyenv virtualenv k8s-playground
