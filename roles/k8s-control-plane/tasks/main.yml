@@ -1,0 +1,74 @@
+---
+# Configurate the control-plane node for the cluster.
+
+- name: Cluster creation
+  block:
+
+  - name: Init cluster
+    ansible.builtin.command:
+      # As vagrant use the same private IP en every box fot the eth0, we use the that is part of our private network.
+      cmd: kubeadm init --apiserver-advertise-address {{ hostvars[inventory_hostname]['ansible_host'] }}
+      creates: /etc/kubernetes/admin.conf
+    register: cluster_init
+    tags:
+      - bootstrap
+      - kubernetes
+      - control-plane
+
+  - name: line-2
+    debug: msg="{{ cluster_init.stdout_lines[-2] }}"
+    when: cluster_init.changed
+    tags:
+      - bootstrap
+      - kubernetes
+      - control-plane
+
+  - name: line-1
+    debug: msg="{{ cluster_init.stdout_lines[-1] }}"
+    when: cluster_init.changed
+    tags:
+      - bootstrap
+      - kubernetes
+      - control-plane
+
+  - set_fact:
+      cluster_join_cmd:
+        host:  "{{ cluster_init.stdout_lines[-2] | regex_search('kubeadm join (?P<host>[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}:[0-9]{4})', '\\g<host>') | first }}"
+        token: "{{ cluster_init.stdout_lines[-2] | regex_search('--token (?P<token>[a-z0-9]{6}\\.[a-z0-9]{16})', '\\g<token>') | first }}"
+        hash:  "{{ cluster_init.stdout_lines[-1] | regex_search('--discovery-token-ca-cert-hash (?P<hash>sha256:[a-z0-9]{64})', '\\g<hash>') | first }}"
+    when: cluster_init.changed
+    tags:
+      - bootstrap
+      - kubernetes
+      - control-plane
+
+#    # print first element on the list
+#  - debug: msg="{{ cluster_join_cmd }}"
+#    when: cluster_init.changed
+#    tags:
+#      - debug
+#
+#  - debug: msg="{{ cluster_join_cmd['host'] }}"
+#    when: cluster_init.changed
+#    tags:
+#      - debug
+#
+#  - debug: msg="{{ cluster_join_cmd['token'] }}"
+#    when: cluster_init.changed
+#    tags:
+#      - debug
+#
+#  - debug: msg="{{ cluster_join_cmd['hash'] }}"
+#    when: cluster_init.changed
+#    tags:
+#      - debug
+
+- name: Ensure SELinux is set to enforcing mode
+  ansible.builtin.lineinfile:
+    path: /root/.bashrc
+    regexp: '^export KUBECONFIG='
+    line: export KUBECONFIG=/etc/kubernetes/admin.conf
+    tags:
+      - bootstrap
+      - kubernetes
+      - control-plane

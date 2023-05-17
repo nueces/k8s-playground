@@ -1,0 +1,23 @@
+---
+# Worker node
+
+## FIXME:
+#- name: Join Cluster
+#  block:
+#  - debug: msg="{{ hostvars['control-plane']['cluster_join_cmd'] }}"
+#    when: hostvars['control-plane']['cluster_join_cmd'] is defined
+#    tags:
+#      - debug
+
+
+  - name: Join cluster
+    ansible.builtin.command:
+      cmd: |
+        kubeadm join {{ hostvars['control-plane']['cluster_join_cmd']['host'] }} 
+        --token {{ hostvars['control-plane']['cluster_join_cmd']['token'] }} 
+        --discovery-token-ca-cert-hash {{ hostvars['control-plane']['cluster_join_cmd']['hash'] }}
+      creates: /etc/kubernetes/kubelet.conf
+    when: hostvars['control-plane']['cluster_join_cmd'] is defined
+    tags:
+      - bootstrap
+      - kubernetes

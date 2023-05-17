@@ -86,12 +86,11 @@
         - bootstrap
         - debian
         - ubuntu
-        - debug
       when:
         (ansible_distribution == "Debian" and ansible_distribution_major_version|int < 12) or
         (ansible_distribution == "Ubuntu" and ansible_distribution_major_version|int < 22)
 
-
+# TODO: Move this task to a different role to allow choosing between different container runtimes
 # containerd
 - name: Configure and Install containerd from upstream (docker.com)
   block:
@@ -143,7 +142,31 @@
 
 # Note:
 # 1. I'm intentionally not uninstalling any package manually in order to avoid conflicts, as I prefer to relay on Debian for do that.
+#
+#
+- name: Containerd | Set configuration
+  ansible.builtin.copy:
+    src: files/etc/containerd/config.toml
+    dest: /etc/containerd/config.toml
+    owner: root
+    group: root
+    mode: '0644'
+    backup: yes
+  register: containerd_configuration
+  tags:
+    - bootstrap
+    - containerd
+    - config
 
+- name: Containerd | Restart containerd runtime to reload configuration
+  ansible.builtin.systemd:
+    state: restarted
+    name: containerd
+  when: containerd_configuration.changed
+  tags:
+    - bootstrap
+    - containerd
+    - config
 
 - name: Enable IPv4 forwarding and let iptables see bridged traffic
   block:

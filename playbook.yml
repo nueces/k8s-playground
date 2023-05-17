@@ -3,3 +3,11 @@
 - hosts: all
   roles:
     - k8s-node
+
+- hosts: directors
+  roles:
+    - k8s-control-plane
+
+- hosts: workers
+  roles:
+    - k8s-worker
