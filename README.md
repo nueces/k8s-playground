@@ -67,7 +67,11 @@ Usage: make <target>  [one or more targets separated by spaces and in the order 
 			Install python dependecies using pip.
 	pip-upgrade
 			Upgrade python dependecies using pip.
-			Ignore pinning versions in the requirements.txt file.
+			This ignore pinning versions in requirements.txt.
+	pip-freeze
+			Like pip freeze but only for packages that are in requirements.txt.
+			This doesn't include any package that could be present in the virtualenv
+			as result of manual installs or resolved dependencies.
 	pip-uninstall
 			Uninstall python dependencies using pip.
 	up
@@ -77,13 +81,15 @@ Usage: make <target>  [one or more targets separated by spaces and in the order 
 	play
 			Run ansible-playbook.
 	debug
-			Run ansible-playbook, ejecute only task tagged as 'debug'.
+			Run ansible-playbook, running only plays and tasks tagged with 'debug'.
 	destroy
 			Destroy Vagrant boxes.
 	build
 			Run up, and play targets.
 	rebuild
 			Run destroy, up, and play targets.
+
+
 
 ```
 

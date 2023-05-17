@@ -40,9 +40,13 @@ pip-install: ##@ Install python dependecies using pip.
 	${PIP} install --requirement requirements.txt
 
 .PHONY: pip-upgrade
-pip-upgrade: ##@ Upgrade python dependecies using pip.
-		##@ Ignore pinning versions in the requirements.txt file.
+pip-upgrade: ##@ Upgrade python dependecies using pip. This ignore pinning versions in requirements.txt.
 	${PIP} install --upgrade $(shell sed -e '/^[a-zA-Z0-9\._-]/!d; s/=.*$$//' requirements.txt)
+
+.PHONY: pip-freeze
+pip-freeze: ##@ Like pip freeze but only for packages that are in requirements.txt. This doesn't include any package that could be present in the virtualenv as result of manual installs or resolved dependencies.
+	REQ="$(shell ${PIP} freeze --quiet --requirement requirements.txt | sed '/^## The following requirements were added by pip freeze:$$/,$$ d')";\
+	echo $$REQ | sed 's/ /\n/g' > requirements.txt
 
 .PHONY: pip-uninstall
 pip-uninstall: ##@ Uninstall python dependencies using pip.
@@ -61,7 +65,7 @@ play: galaxy-up ##@ Run ansible-playbook.
 	${ANSIBLE_PLAYBBOK} playbook.yml
 
 .PHONY: debug
-debug: galaxy-up ##@ Run ansible-playbook, ejecute only task tagged as 'debug'.
+debug: galaxy-up ##@ Run ansible-playbook, running only plays and tasks tagged with 'debug'.
 	${ANSIBLE_PLAYBBOK} playbook.yml --tags debug
 
 .PHONY: destroy
