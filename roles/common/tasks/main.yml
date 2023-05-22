@@ -95,8 +95,10 @@
 - name: Configure and Install containerd from upstream (docker.com)
   block:
     - name: Containerd | Register dpkg architecture
-      ansible.builtin.command: dpkg --print-architecture
+      ansible.builtin.command:
+        cmd: dpkg --print-architecture
       register: dpkg_architecture
+      changed_when: false
       tags:
         - bootstrap
         - containerd
