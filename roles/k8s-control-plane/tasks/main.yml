@@ -128,7 +128,7 @@
         url: https://raw.githubusercontent.com/projectcalico/calico/{{ calico_version }}//manifests/{{ item }}
         dest: /srv/data/projectcalico/calico/{{ calico_version }}//manifests/{{ item }}
         mode: '0440'
-      with_items:
+      loop:
         - tigera-operator.yaml
         - custom-resources.yaml
       tags:

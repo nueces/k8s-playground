@@ -26,6 +26,16 @@
       tags:
         - bootstrap
 
+# Avoid issues when the box as been created previously.
+- name: Restart systemd chrony to sync system clock
+  ansible.builtin.systemd:
+    state: restarted
+    name: chrony
+  changed_when: false
+  tags:
+    - bootstrap
+    - config
+
 # Apt sources
 - name: Configure apt sources
   block:
