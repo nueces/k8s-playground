@@ -110,6 +110,20 @@
         - control-plane
         - kubectl
 
+    - name: Set bash completion and aliases.
+      ansible.builtin.blockinfile:
+        path: "{{ item }}/.bashrc"
+        block: |
+          source <(kubectl completion bash)
+          alias k=kubectl
+          complete -o default -F __start_kubectl k
+      loop:
+        - /root/
+        - "/home/{{ ansible_user }}"
+      tags:
+        - debug
+
+
 - name: Install Network Plugin
   block:
     - name: Create download directory
