@@ -1,3 +1,4 @@
+# This file is managed by ansible. Don't modify it locally.
 version = 2
 [plugins]
   [plugins."io.containerd.grpc.v1.cri"]
