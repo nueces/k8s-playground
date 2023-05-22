@@ -42,33 +42,143 @@
       - kubernetes
       - control-plane
 
-#    # print first element on the list
-#  - debug: msg="{{ cluster_join_cmd }}"
-#    when: cluster_init.changed
-#    tags:
-#      - debug
-#
-#  - debug: msg="{{ cluster_join_cmd['host'] }}"
-#    when: cluster_init.changed
-#    tags:
-#      - debug
-#
-#  - debug: msg="{{ cluster_join_cmd['token'] }}"
-#    when: cluster_init.changed
-#    tags:
-#      - debug
-#
-#  - debug: msg="{{ cluster_join_cmd['hash'] }}"
-#    when: cluster_init.changed
-#    tags:
-#      - debug
+- name: Install kubectl configuration
+  block:
+    # This is not entirely necessary, but it's nice to have this pointing to the actual configuration in case someone look for it.
+    - name: Set configuration for the root user
+      ansible.builtin.lineinfile:
+        path: /root/.bashrc
+        regexp: '^export KUBECONFIG='
+        line: export KUBECONFIG=/root/.kube/config
+      tags:
+        - bootstrap
+        - kubernetes
+        - control-plane
+        - kubectl
 
-- name: Ensure SELinux is set to enforcing mode
-  ansible.builtin.lineinfile:
-    path: /root/.bashrc
-    regexp: '^export KUBECONFIG='
-    line: export KUBECONFIG=/etc/kubernetes/admin.conf
-    tags:
-      - bootstrap
-      - kubernetes
-      - control-plane
+    - name: Create kube config directory for the root user
+      ansible.builtin.file:
+        path: /root/.kube
+        state: directory
+        owner: root
+        group: root
+        mode: "0750"
+      tags:
+        - bootstrap
+        - kubernetes
+        - control-plane
+        - kubectl
+
+    - name: Set configuration for the root user
+      ansible.builtin.copy:
+        remote_src: yes
+        src: /etc/kubernetes/admin.conf
+        dest: /root/.kube/config
+        owner: root
+        group: root
+        mode: "0640"
+      tags:
+        - bootstrap
+        - kubernetes
+        - control-plane
+        - kubectl
+
+    - name: Create kube config directory for the admin user
+      ansible.builtin.file:
+        path: /home/{{ ansible_user }}/.kube
+        state: directory
+        owner: "{{ ansible_user }}"
+        group: "{{ ansible_user }}"
+        mode: "0750"
+      tags:
+        - bootstrap
+        - kubernetes
+        - control-plane
+        - kubectl
+
+    - name: Set configuration for the admin user
+      ansible.builtin.copy:
+        remote_src: yes
+        src: /etc/kubernetes/admin.conf
+        dest: /home/{{ ansible_user }}/.kube/config
+        owner: "{{ ansible_user }}"
+        group: "{{ ansible_user }}"
+        mode: "0640"
+      tags:
+        - bootstrap
+        - kubernetes
+        - control-plane
+        - kubectl
+
+- name: Install Network Plugin
+  block:
+    - name: Create download directory
+      ansible.builtin.file:
+        path: /srv/data/projectcalico/calico/{{ calico_version }}/manifests/
+        state: directory
+        mode: '0755'
+      tags:
+        - bootstrap
+        - kubernetes
+        - control-plane
+        - calico
+
+    - name: Download yaml definitions
+      ansible.builtin.get_url:
+        url: https://raw.githubusercontent.com/projectcalico/calico/{{ calico_version }}//manifests/{{ item }}
+        dest: /srv/data/projectcalico/calico/{{ calico_version }}//manifests/{{ item }}
+        mode: '0440'
+      with_items:
+        - tigera-operator.yaml
+        - custom-resources.yaml
+      tags:
+        - bootstrap
+        - kubernetes
+        - control-plane
+        - calico
+
+    - name: Check if CNI Calico 'trigera-opertator' namespace is present
+      ansible.builtin.command:
+        cmd: kubectl get ns tigera-operator
+      register: namespace_trigera_operator_is_present
+      changed_when: false
+      ignore_errors: true
+      tags:
+        - bootstrap
+        - kubernetes
+        - control-plane
+        - calico
+
+    - name: Install the CNI Calico operator on the cluster
+      ansible.builtin.command:
+        cmd: kubectl create --filename=/srv/data/projectcalico/calico/{{ calico_version }}//manifests/tigera-operator.yaml
+      when: namespace_trigera_operator_is_present.failed
+      tags:
+        - bootstrap
+        - kubernetes
+        - control-plane
+        - calico
+
+    - name: Check if Calico custom resources are installed
+      ansible.builtin.command:
+        cmd: kubectl describe -f /srv/data/projectcalico/calico/{{ calico_version }}/manifests/custom-resources.yaml
+      register: calico_custom_resources_installed
+      changed_when: false
+      ignore_errors: true
+      tags:
+        - bootstrap
+        - kubernetes
+        - control-plane
+        - calico
+        - calico-custom-resources
+
+    - name: Install the CNI Calico custom resources on the cluster
+      ansible.builtin.command:
+        cmd: kubectl create --filename=/srv/data/projectcalico/calico/{{ calico_version }}//manifests/custom-resources.yaml
+      when: calico_custom_resources_installed.failed
+      tags:
+        - bootstrap
+        - kubernetes
+        - control-plane
+        - calico
+        - calico-custom-resources
