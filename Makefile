@@ -77,3 +77,13 @@ build: up play ##@ Run up, and play targets.
 
 .PHONY: rebuild
 rebuild: destroy up play ##@ Run destroy, up, and play targets.
+
+# snapshot and restore are just a simple way to create a simple point in time backup to avoid need to recreate the full environment.
+# this is useful when you are testing a new ansible task that modify the machine state.
+.PHONY: snapshot ##@ Create a vagrant snapshot for all the machines in the environment.
+snapshot:
+	vagrant snapshot save simple-snapshot
+
+.PHONY: restore ##@ Resto the vagrant snapshot foll all the machines in the environment.
+restore:
+	vagrant snapshot restore simple-snapshot
