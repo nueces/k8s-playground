@@ -7,7 +7,7 @@
   - name: Init cluster
     ansible.builtin.command:
       # As vagrant use the same private IP en every box fot the eth0, we use the that is part of our private network.
-      cmd: kubeadm init --apiserver-advertise-address {{ hostvars[inventory_hostname]['ansible_host'] }}
+      cmd: kubeadm init --apiserver-advertise-address {{ hostvars[inventory_hostname]['ansible_host'] }} --pod-network-cidr={{ pod_network_cidr }}
       creates: /etc/kubernetes/admin.conf
     register: cluster_init
     tags:

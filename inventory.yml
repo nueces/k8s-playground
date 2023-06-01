@@ -16,6 +16,9 @@ all:
     vagrant_box: debian/bullseye64
     vagrant_cpus: 2
     vagrant_memory: 4096
+    # Kubernets:
+    calico_version: v3.26.0
+    pod_network_cidr: 10.10.0.0/16
   # Groups
   children:
     directors:

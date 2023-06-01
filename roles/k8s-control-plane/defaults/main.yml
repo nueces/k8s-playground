@@ -1,2 +1,3 @@
 ---
-calico_version: v3.25.1
+calico_version: v3.26.0
+pod_network_cidr: 10.10.0.0/16
