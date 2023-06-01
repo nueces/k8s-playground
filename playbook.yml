@@ -1,5 +1,9 @@
 ---
 
+- hosts: all
+  roles:
+    - common
+
 - hosts: directors
   roles:
     - k8s-control-plane
