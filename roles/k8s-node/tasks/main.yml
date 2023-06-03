@@ -33,3 +33,15 @@
     tags:
       - bootstrap
       - kubernetes
+
+  - name: Kubernetes | Prevent packages from being upgraded
+    ansible.builtin.dpkg_selections:
+      name: "{{ item }}"
+      selection: hold
+    loop:
+      - kubelet
+      - kubeadm
+      - kubectl
+    tags:
+      - bootstrap
+      - kubernetes
