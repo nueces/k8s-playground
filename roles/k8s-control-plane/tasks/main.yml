@@ -155,7 +155,7 @@
       ansible.builtin.shell:
         cmd: kubectl get pods -n kube-system | grep -E 'calico-kube-controllers-[a-z0-9]{10}-[a-z0-9]{5}' | wc -l
       register: calico_installed
-      changed_when: false
+      changed_when: calico_installed.stdout|int == 0
       tags:
         - bootstrap
         - kubernetes
@@ -178,7 +178,7 @@
     - name: Install the CNI Calico Pod Network Addon
       ansible.builtin.command:
         cmd: kubectl create --filename=/srv/data/projectcalico/calico/{{ calico_version }}//manifests/calico.yaml
-      when: calico_installed.stdout == "0"
+      when: calico_installed.changed
       tags:
         - bootstrap
         - kubernetes

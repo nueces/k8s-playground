@@ -139,7 +139,6 @@
         default_release: "{{ ansible_distribution_release }}"
       loop:
         - containerd.io
-      register: containerd_installed
       tags:
         - bootstrap
         - containerd
@@ -154,7 +153,6 @@
     state: present
   loop:
     - containerd
-  register: containerd_installed
   tags:
     - bootstrap
     - containerd
@@ -163,12 +161,11 @@
   # Note:
   # 1. I'm intentionally not uninstalling any package manually in order to avoid conflicts, as I prefer to relay on Debian for do that.
 
-
-- name: Containerd | Remove basic configuration installed with the package
-  ansible.builtin.file:
-    path: /etc/containerd/config.toml
-    state: absent
-  when: containerd_installed.changed
+- name: Containerd | Verify if the configuration file is the one distributed with the package
+  ansible.builtin.shell:
+    cmd: grep -E "^# {{ ansible_managed_mark }}" /etc/containerd/config.toml | wc -l
+  register: containerd_has_default_configuration
+  changed_when: containerd_has_default_configuration.stdout|int == 0
   tags:
     - bootstrap
     - containerd
@@ -176,10 +173,11 @@
 
 - name: Containerd | Create default configuration
   ansible.builtin.shell:
-    cmd:  containerd config default > /etc/containerd/config.toml
-    creates: /etc/containerd/config.toml
+    cmd: |
+      echo "# {{ ansible_managed_mark }}.\n" > /etc/containerd/config.toml
+      containerd config default >> /etc/containerd/config.toml
   register: containerd_configuration
-  when: containerd_installed.changed
+  when: containerd_has_default_configuration.changed
   tags:
     - bootstrap
     - containerd

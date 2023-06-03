@@ -7,3 +7,5 @@ sysctl_parameters:
   net.bridge.bridge-nf-call-iptables: 1
   net.bridge.bridge-nf-call-ip6tables: 1
   net.ipv4.ip_forward: 1
+# Define a maker for managed configurations, similar to the ansible_managed variable.
+ansible_managed_mark: Ansible managed file. Do not edit directly.
