@@ -132,7 +132,10 @@
         - /root/
         - "/home/{{ ansible_user }}"
       tags:
-        - debug
+        - bootstrap
+        - kubernetes
+        - control-plane
+        - kubectl
 
 
 - name: Install Network Plugin
