@@ -23,7 +23,8 @@
 
   - name: Kubernetes | Install packages
     ansible.builtin.apt:
-      name: "{{ item }}"
+      # The '.*' is concatenated to the choose version to install the latest revision available.
+      name: "{{ item ~ kubernetes_version | default('', true) | ternary('=' ~ kubernetes_version ~ '.*', '') }}"
       state: present
     loop:
       - kubelet
