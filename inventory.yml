@@ -16,8 +16,17 @@ all:
     vagrant_box: ubuntu/jammy64
     vagrant_cpus: 2
     vagrant_memory: 4096
-    # Kubernets:
-    # kubernetes_version: 1.27
+    # Kubernetes version:
+    # if no version is provided, install the latest one.
+    # As we are pinning a specific package version this value can be specified as a Kubernetes release version:
+    # e.g.:
+    # - 1.27
+    # - 1.26
+    # or as a partial or full package version.
+    # e.g.:
+    # - 1.25.1-00
+    # - 1.25.1-  ## Note the - to avoid matching only the first digit in the minor version.
+    kubernetes_version: 1.27
     calico_version: v3.26.0
     pod_network_cidr: 10.10.0.0/16
   # Groups

@@ -23,15 +23,55 @@
       - bootstrap
       - kubernetes
 
+
+
+  - name: Kubernetes | Get latest version
+    ansible.builtin.shell:
+      cmd: |
+          apt show kubelet | awk '/Version/ { print $2 }'
+    register: kubernetes_latest_version
+    changed_when: false
+    run_once: true
+    tags:
+      - bootstrap
+      - kubernetes
+      - debug
+
+  - name: Kubernetes | Latest Version
+    ansible.builtin.debug:
+      msg: "{{ kubernetes_latest_version.stdout }}"
+    run_once: true
+    tags:
+      - bootstrap
+      - kubernetes
+      - debug
+
+  # Set the second parameter on the 'default' filter as true, to use the specified value when variable evaluate to false
+  # or is an empty string.
+  - name: Kubernetes | Selected Version via configuration
+    ansible.builtin.debug:
+      msg: "{{ kubernetes_version | default('', true)}}"
+    run_once: true
+    tags:
+      - bootstrap
+      - kubernetes
+      - debug
+
+  # - Specifying the latest version instead of leaving it empty to make it more explicit.
+  # - In a real world scenery the downgrade/upgrade should be done in a different way, but this is a lab so the option
+  #   'allow_change_held_packages' is used to simplify the process.
   - name: Kubernetes | Install packages
     ansible.builtin.apt:
-      # The '.*' is concatenated to the choose version to install the latest revision available.
-      name: "{{ item ~ kubernetes_version | default('', true) | ternary('=' ~ kubernetes_version ~ '.*', '') }}"
+      # The '*' is concatenated to match a Kubernetes release or, a partial or full package version.
+      name: "{{ item }}"
       state: present
+      allow_downgrade: yes
+      allow_change_held_packages: yes
     loop:
-      - kubelet
-      - kubeadm
-      - kubectl
+      - "{{ 'kubelet' ~ '=' ~ kubernetes_version | ternary(kubernetes_version ~ '*', kubernetes_latest_version.stdout) }}"
+      - "{{ 'kubeadm' ~ '=' ~ kubernetes_version | ternary(kubernetes_version ~ '*', kubernetes_latest_version.stdout) }}"
+      - "{{ 'kubectl' ~ '=' ~ kubernetes_version | ternary(kubernetes_version ~ '*', kubernetes_latest_version.stdout) }}"
+
     tags:
       - bootstrap
       - kubernetes
