@@ -23,8 +23,6 @@
       - bootstrap
       - kubernetes
 
-
-
   - name: Kubernetes | Get latest version
     ansible.builtin.shell:
       cmd: |
