@@ -1,3 +1,3 @@
 ---
-# By default install the latest version
+# By default, install the latest version
 kubernetes_version:

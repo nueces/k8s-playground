@@ -1,4 +1,5 @@
 .idea
+.kube
 .vagrant
 vault
 TODO

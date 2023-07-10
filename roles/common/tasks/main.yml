@@ -35,6 +35,9 @@
   tags:
     - bootstrap
     - config
+  when:
+    (ansible_distribution == "Debian") or
+    (ansible_distribution == "Ubuntu" and ansible_distribution_major_version|int < 22)
 
 # Apt sources
 - name: Configure apt sources
@@ -45,6 +48,8 @@
         state: absent
       tags:
         - bootstrap
+      when:
+        ansible_distribution == "Debian"
 
     - name: apt sources | enable main, contrib and non-free components on Debian
       ansible.builtin.apt_repository:
@@ -63,7 +68,8 @@
 
     - name: apt sources | enable main, contrib and non-free components for debian-security on Debian
       ansible.builtin.apt_repository:
-        repo: deb https://deb.debian.org/debian-security/ {{ ansible_distribution_release }}-security main contrib non-free
+        repo: |
+          deb https://deb.debian.org/debian-security/ {{ ansible_distribution_release }}-security main contrib non-free
         state: present
         filename: main
       tags:
@@ -109,6 +115,7 @@
         cmd: dpkg --print-architecture
       register: dpkg_architecture
       changed_when: false
+      run_once: true
       tags:
         - bootstrap
         - containerd
@@ -125,7 +132,9 @@
 
     - name: Containerd | Add docker apt repository
       ansible.builtin.apt_repository:
-        repo: deb [arch={{ dpkg_architecture.stdout }} signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/{{ ansible_distribution | lower}} {{ ansible_distribution_release }} stable
+        repo: |
+          deb [arch={{ dpkg_architecture.stdout }} signed-by=/etc/apt/keyrings/docker.gpg]
+          https://download.docker.com/linux/{{ ansible_distribution | lower}} {{ ansible_distribution_release }} stable
         state: present
         filename: docker
       tags:
@@ -159,7 +168,8 @@
   when:
     - install_containerd_from_upstream is false
   # Note:
-  # 1. I'm intentionally not uninstalling any package manually in order to avoid conflicts, as I prefer to relay on Debian for do that.
+  # Intentionally not uninstalling any package manually in order to avoid conflicts, and relay on apt conflict
+  # resolutions for doing that.
 
 - name: Containerd | Verify if the configuration file is the one distributed with the package
   ansible.builtin.shell:

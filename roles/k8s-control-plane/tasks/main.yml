@@ -7,7 +7,9 @@
   - name: Init cluster
     ansible.builtin.command:
       # As vagrant use the same private IP en every box fot the eth0, we use the that is part of our private network.
-      cmd: kubeadm init --apiserver-advertise-address {{ hostvars[inventory_hostname]['ansible_host'] }} --pod-network-cidr={{ pod_network_cidr }}
+      cmd: |
+        kubeadm init --apiserver-advertise-address {{ hostvars[inventory_hostname]['ansible_host'] }}
+        --pod-network-cidr={{ pod_network_cidr }}
       creates: /etc/kubernetes/admin.conf
     register: cluster_init
     tags:
@@ -55,7 +57,8 @@
 
 - name: Install kubectl configuration
   block:
-    # This is not entirely necessary, but it's nice to have this pointing to the actual configuration in case someone look for it.
+    # This is not entirely necessary, but it's nice to have this pointing to the actual configuration in case of the
+    # root user being used for maintenance.
     - name: Set configuration for the root user
       ansible.builtin.lineinfile:
         path: /root/.bashrc
