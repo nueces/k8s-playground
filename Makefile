@@ -84,6 +84,10 @@ rebuild: destroy up play ##@ Run destroy, up, and play targets.
 snapshot:
 	vagrant snapshot save simple-snapshot
 
-.PHONY: restore ##@ Resto the vagrant snapshot foll all the machines in the environment.
+.PHONY: restore ##@ Restore the vagrant snapshot foll all the machines in the environment.
 restore:
 	vagrant snapshot restore simple-snapshot
+
+.PHONY: halt ##@ Run vagrant halt
+halt:
+	vagrant halt
