@@ -13,7 +13,8 @@ all:
     ansible_ssh_private_key_file: vault/ansible_id_rsa
     ansible_ssh_public_key_file: vault/ansible_id_rsa.pub
     # Vagrant settings
-    vagrant_box: ubuntu/jammy64
+    #vagrant_box: ubuntu/jammy64
+    vagrant_box: debian/bookworm64
     vagrant_cpus: 2
     vagrant_memory: 4096
     # Kubernetes version:
